@@ -1,11 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { getJson } from '../api/client.js';
+import type { ReactNode } from 'react';
 
 type Props<T> = {
   title: string;
   description: string;
-  endpoint: string;
-  collection: string;
+  items: T[] | null;
+  error: string | null;
   emptyMessage: string;
   renderItem: (item: T) => ReactNode;
 };
@@ -13,34 +12,11 @@ type Props<T> = {
 export function CapabilityCard<T>({
   title,
   description,
-  endpoint,
-  collection,
+  items,
+  error,
   emptyMessage,
   renderItem,
 }: Props<T>) {
-  const [items, setItems] = useState<T[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    getJson<Record<string, T[]>>(endpoint)
-      .then((data) => {
-        const records = data[collection];
-        if (!Array.isArray(records)) {
-          throw new Error(`Invalid ${title.toLowerCase()} response`);
-        }
-        if (active) setItems(records);
-      })
-      .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : String(reason));
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [collection, endpoint, title]);
-
   return (
     <section className="card h-100">
       <div className="card-body">
